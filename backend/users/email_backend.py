@@ -1,4 +1,4 @@
-from django.core.mail.backends.smtp import EmailBackend
+from django.core.mail.backends.smtp import EmailBackend as DjangoEmailBackend
 
-class UnverifiedSMTPEmailBackend(EmailBackend):
+class UnverifiedSMTPEmailBackend(DjangoEmailBackend):
     pass
