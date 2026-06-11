@@ -10,45 +10,37 @@ User = get_user_model()
 
 
 def send_otp_email_async(user, otp_code, purpose="verification"):
-    import threading
     from django.core.mail import send_mail
     from django.conf import settings
 
-    # Print to console for easy testing during development
-    print(f"\n==================================================")
+    print(f"\n{'='*50}")
     print(f"[DEBUG OTP] Purpose: {purpose.upper()}")
     print(f"User: {user.username} | Email: {user.email}")
     print(f"OTP Code: {otp_code}")
-    print(f"==================================================\n")
+    print(f"{'='*50}\n")
 
-    def run_send():
-        if purpose == "password_reset":
-            subject = 'Password Reset OTP - Smart College Resource Sharing Platform'
-            message = (
-                f"Hello {user.username},\n\n"
-                f"We received a request to reset your password.\n"
-                f"Please use the following 6-digit One-Time Password (OTP) to reset your password:\n\n"
-                f"   OTP Code: {otp_code}\n\n"
-                f"This code is valid for 10 minutes.\n\n"
-                f"If you did not request this, please ignore this email.\n"
-            )
-        else:
-            subject = 'Verify Your Smart College Resource Sharing Platform Account'
-            message = (
-                f"Welcome to Smart College Resource Sharing Platform, {user.username}!\n\n"
-                f"Your account registration is almost complete.\n"
-                f"Please use the following 6-digit One-Time Password (OTP) to verify your email address:\n\n"
-                f"   OTP Code: {otp_code}\n\n"
-                f"This code is valid for 10 minutes.\n\n"
-                f"If you did not request this, please ignore this email.\n"
-            )
-        try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-            print(f"Email sent successfully to {user.email}")
-        except Exception as e:
-            print(f"FAILED TO SEND OTP EMAIL to {user.email}: {e}")
+    if purpose == "password_reset":
+        subject = 'Password Reset OTP - Smart College Resource Sharing Platform'
+        message = (
+            f"Hello {user.username},\n\n"
+            f"OTP Code: {otp_code}\n\n"
+            f"Valid for 10 minutes.\n"
+        )
+    else:
+        subject = 'Verify Your Account - Smart College Resource Sharing Platform'
+        message = (
+            f"Welcome {user.username}!\n\n"
+            f"OTP Code: {otp_code}\n\n"
+            f"Valid for 10 minutes.\n"
+        )
 
-    threading.Thread(target=run_send).start()
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        print(f"[EMAIL SUCCESS] Sent to {user.email}")
+    except Exception as e:
+        print(f"[EMAIL FAILED] {user.email}: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 
