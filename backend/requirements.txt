@@ -12,3 +12,4 @@ pypdf
 gunicorn
 dj-database-url
 psycopg2-binary
+requests

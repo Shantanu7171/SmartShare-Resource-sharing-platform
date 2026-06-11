@@ -29,8 +29,26 @@ def send_otp_email_async(user, otp_code, purpose="verification"):
                 subject = 'Verify Your Account'
                 message = f"Welcome {user.username}!\n\nOTP Code: {otp_code}\n\nValid for 10 minutes."
 
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-            print(f"[EMAIL SUCCESS] Sent to {user.email}")
+            if getattr(settings, 'BREVO_API_KEY', None):
+                import requests
+                response = requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "api-key": settings.BREVO_API_KEY,
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "sender": {"name": "SmartShare", "email": settings.DEFAULT_FROM_EMAIL},
+                        "to": [{"email": user.email}],
+                        "subject": subject,
+                        "textContent": message
+                    }
+                )
+                print(f"[EMAIL SUCCESS] Status: {response.status_code} | {response.text}")
+            else:
+                # Fallback to standard Django send_mail (perfect for local development / console backend)
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                print(f"[EMAIL SUCCESS] Sent to {user.email} (via Django mail)")
         except Exception as e:
             print(f"[EMAIL FAILED] {user.email}: {e}")
             import traceback
